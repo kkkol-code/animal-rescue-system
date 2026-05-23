@@ -1,0 +1,8 @@
+node_modules/
+dist/
+backend/target/
+*.class
+*.log
+.m2/
+.DS_Store
+Thumbs.db

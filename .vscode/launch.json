@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot 启动",
+            "request": "launch",
+            "mainClass": "com.animalrescue.Application",
+            "projectName": "animal-rescue-backend",
+            "cwd": "${workspaceFolder}/backend",
+            "console": "integratedTerminal"
+        }
+    ]
+}

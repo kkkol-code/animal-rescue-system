@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.animalrescue.mapper.AnimalMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="AnimalMap" type="com.animalrescue.entity.Animal">
+        <id property="animalId" column="animal_id"/>
+        <result property="name" column="name"/>
+        <result property="species" column="species"/>
+        <result property="breed" column="breed"/>
+        <result property="gender" column="gender"/>
+        <result property="adoptStatus" column="adopt_status"/>
+        <result property="entryDate" column="entry_date"/>
+    </resultMap>
+
+    <!-- 公共 WHERE 片段 -->
+    <sql id="whereCondition">
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE '%' + #{name} + '%'
+            </if>
+            <if test="adoptStatus != null and adoptStatus != ''">
+                AND adopt_status = #{adoptStatus}
+            </if>
+            <if test="species != null and species != ''">
+                AND species = #{species}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 条件分页查询（SQL Server OFFSET-FETCH） -->
+    <select id="findByCondition" resultMap="AnimalMap">
+        SELECT * FROM animals
+        <include refid="whereCondition"/>
+        ORDER BY entry_date DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <!-- 条件统计总数 -->
+    <select id="countByCondition" resultType="int">
+        SELECT COUNT(*) FROM animals
+        <include refid="whereCondition"/>
+    </select>
+
+</mapper>
