@@ -42,21 +42,12 @@ const save = (key, data) => {
 // ==================== 持久化响应式数据 ====================
 export const mockAnimals = reactive(load('ar_animals_v2', defaultAnimals))
 export const mockMedicalRecords = reactive(load('ar_medical_records_v2', defaultMedicalRecords))
-export const mockApplications = reactive(load('ar_applications_v2', []))
-
 const persist = () => {
   save('ar_animals_v2', mockAnimals)
   save('ar_medical_records_v2', mockMedicalRecords)
-  save('ar_applications_v2', mockApplications)
 }
 
 // ==================== 暴露方法 ====================
-
-/** 更新动物状态 */
-export const updateAnimalStatus = (animalId, newStatus) => {
-  const animal = mockAnimals.find(a => a.animalId === animalId)
-  if (animal) { animal.adoptStatus = newStatus; persist() }
-}
 
 /** 新增医疗记录 */
 let nextRecordId = (() => {
@@ -68,18 +59,6 @@ let nextRecordId = (() => {
 export const addMedicalRecord = (animalId, record) => {
   if (!mockMedicalRecords[animalId]) mockMedicalRecords[animalId] = []
   mockMedicalRecords[animalId].push({ recordId: nextRecordId++, ...record })
-  persist()
-}
-
-/** 新增领养申请 */
-let nextAppId = (() => {
-  let max = 0
-  mockApplications.forEach(a => { if (a.applicationId > max) max = a.applicationId })
-  return max + 1
-})()
-
-export const addApplication = (app) => {
-  mockApplications.push({ applicationId: nextAppId++, applyDate: new Date().toISOString().split('T')[0], status: 'pending', ...app })
   persist()
 }
 

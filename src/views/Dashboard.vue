@@ -190,70 +190,29 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.dashboard {
-  padding: 20px;
-}
-
-.stat-cards {
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  cursor: default;
-}
+.dashboard { padding: 24px; }
+.stat-cards { margin-bottom: 24px; }
+.stat-card { cursor: pointer; transition: transform 0.2s; }
+.stat-card:hover { transform: translateY(-3px); }
 
 .stat-card :deep(.el-card__body) {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
+  display: flex; align-items: center; gap: 18px; padding: 24px;
 }
 
 .stat-card__icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
+  width: 68px; height: 68px; border-radius: 18px;
+  display: flex; align-items: center; justify-content: center; font-size: 32px;
 }
 
-.stat-card--primary .stat-card__icon { background: linear-gradient(135deg, #409EFF, #79bbff); }
-.stat-card--success .stat-card__icon { background: linear-gradient(135deg, #67C23A, #95d475); }
-.stat-card--warning .stat-card__icon { background: linear-gradient(135deg, #E6A23C, #eebe77); }
+.stat-card--primary .stat-card__icon { background: linear-gradient(135deg, #B5E8CC, #7EC8A0); }
+.stat-card--success .stat-card__icon { background: linear-gradient(135deg, #FFEC8B, #FFD97A); }
+.stat-card--warning .stat-card__icon { background: linear-gradient(135deg, #FFD1C1, #F4A5A5); }
 
-.stat-card__value {
-  font-size: 28px;
-  font-weight: 700;
-  color: #303133;
-  line-height: 1.2;
-}
+.stat-card__value { font-size: 30px; font-weight: 700; color: #4A4A4A; line-height: 1.2; }
+.stat-card__value small { font-size: 13px; font-weight: 400; color: #A0A0A0; margin-left: 4px; }
+.stat-card__label { font-size: 13px; color: #A0A0A0; margin-top: 4px; }
 
-.stat-card__value small {
-  font-size: 14px;
-  font-weight: 400;
-  color: #909399;
-  margin-left: 4px;
-}
-
-.stat-card__label {
-  font-size: 14px;
-  color: #909399;
-  margin-top: 4px;
-}
-
-.chart-row {
-  margin-top: 0;
-}
-
-.chart-title {
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.chart-container {
-  width: 100%;
-  height: 380px;
-}
+.chart-row { margin-top: 0; }
+.chart-title { font-weight: 700; font-size: 16px; color: #5EA87E; }
+.chart-container { width: 100%; height: 380px; }
 </style>

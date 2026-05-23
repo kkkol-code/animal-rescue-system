@@ -264,9 +264,12 @@ const goBack = () => router.push('/animals')
 </script>
 
 <style scoped>
-.medical-record { padding: 20px; }
-.mr-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-.mr-title { font-size: 18px; font-weight: 600; color: #303133; }
-.mr-info { margin-bottom: 16px; }
+.medical-record { padding: 24px; }
+.mr-header { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.mr-title { font-size: 18px; font-weight: 700; color: #5EA87E; }
+.mr-title::before { content: '🐱 '; }
+.mr-info { margin-bottom: 18px; }
+.mr-info :deep(.el-card__body) { padding: 18px 22px; }
 .mr-records__header { display: flex; justify-content: space-between; align-items: center; }
+.mr-records :deep(.el-card__body) { padding: 18px 22px; }
 </style>

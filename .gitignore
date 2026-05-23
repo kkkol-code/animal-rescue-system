@@ -6,3 +6,11 @@ backend/target/
 .m2/
 .DS_Store
 Thumbs.db
+.env
+.env.*
+.idea/
+*.tar.gz
+*.zip
+cf*.exe
+cloudflared*.exe
+*.ps1

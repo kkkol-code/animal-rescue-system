@@ -105,7 +105,7 @@ import { EditPen, User, Present, Check, RefreshRight } from '@element-plus/icons
 import { ElMessage } from 'element-plus'
 import { getAdoptableAnimals } from '@/api/animals'
 import { submitAdoption } from '@/api/adoption'
-import { mockAnimals, updateAnimalStatus, addApplication } from '@/store/mockData'
+import { mockAnimals } from '@/store/mockData'
 
 // ==================== 可领养动物 ====================
 const route = useRoute()
@@ -194,16 +194,7 @@ const handleSubmit = async () => {
     ElMessage.success('领养申请已成功提交！工作人员将在 3 个工作日内与您联系。')
     handleReset()
   } catch {
-    // 后端未启动时降级为 Mock 提交，持久化到 localStorage
-    updateAnimalStatus(form.animal_id, 'adopted')
-    addApplication({
-      adopter_name: form.real_name,
-      adopter_phone: form.phone,
-      animal_id: form.animal_id,
-      remark: form.remark
-    })
-    ElMessage.success('领养成功！该动物已标记为已领养。')
-    handleReset()
+    ElMessage.error('提交失败，请确认后端服务已启动')
   } finally {
     submitting.value = false
   }
@@ -221,24 +212,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.adoption-audit {
-  padding: 20px;
-}
-
-.form-card {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.form-card__header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-:deep(.el-divider) {
-  margin: 24px 0 20px;
-}
+.adoption-audit { padding: 24px; }
+.form-card { max-width: 800px; margin: 0 auto; }
+.form-card__header { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: #5EA87E; }
+:deep(.el-divider) { margin: 28px 0 22px; }
+:deep(.el-divider__text) { color: #5EA87E; font-weight: 600; }
 </style>

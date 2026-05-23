@@ -36,75 +36,68 @@
       </div>
     </el-card>
 
-    <!-- 数据表格 -->
-    <el-card shadow="never" class="table-card">
-      <el-table
-        :data="tableData"
-        v-loading="loading"
-        stripe
-        border
-        style="width: 100%"
-        :default-sort="{ prop: 'entryDate', order: 'descending' }"
-      >
-        <el-table-column prop="animalId" label="动物 ID" width="100" align="center" />
-        <el-table-column prop="name" label="名称" width="140" />
-        <el-table-column prop="species" label="种类" width="80" align="center">
-          <template #default="{ row }">
-            <el-tag :type="row.species === '狗' ? 'warning' : ''" size="small" effect="plain">
-              {{ row.species }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="breed" label="品种" width="140" />
-        <el-table-column prop="gender" label="性别" width="80" align="center">
-          <template #default="{ row }">
-            <span :style="{ color: row.gender === '公' ? '#409EFF' : '#F56C6C' }">
-              {{ row.gender === '公' ? '♂' : '♀' }} {{ row.gender }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="entryDate" label="入站日期" width="130" align="center" sortable />
-        <el-table-column prop="adoptStatus" label="领养状态" width="110" align="center">
-          <template #default="{ row }">
-            <el-tag :type="statusTagType(row.adoptStatus)" effect="dark">
-              {{ statusLabel(row.adoptStatus) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="280" align="center" fixed="right">
-          <template #default="{ row }">
-            <el-button type="info" size="small" :icon="Document" link @click="handleViewMedical(row)">
-              档案
-            </el-button>
-            <el-button
-              type="success"
-              size="small"
-              :icon="Present"
-              link
-              :disabled="row.adoptStatus !== 'pending'"
-              @click="handleAdopt(row)"
-            >
-              领养
-            </el-button>
-            <el-button
-              type="danger"
-              size="small"
-              :icon="Delete"
-              link
-              @click="handleDelete(row)"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+    <!-- 🐾 卡片式动物档案网格 -->
+    <el-card shadow="never" class="table-card" v-loading="loading">
+      <template #header>
+        <span class="card-header-title">🐾 动物档案 · 共 {{ pagination.total }} 只小可爱</span>
+      </template>
+
+      <el-row :gutter="16" class="animal-grid">
+        <el-col :xs="24" :sm="12" :md="8" :lg="6" v-for="row in tableData" :key="row.animalId">
+          <div class="animal-card" :class="'animal-card--' + row.adoptStatus">
+            <!-- 卡片头部：状态 + ID -->
+            <div class="ac-header">
+              <el-tag :type="statusTagType(row.adoptStatus)" effect="dark" size="small" class="ac-tag">
+                <span class="ac-tag-emoji">{{ statusEmoji(row.adoptStatus) }}</span>
+                {{ statusLabel(row.adoptStatus) }}
+              </el-tag>
+              <span class="ac-id">#{{ row.animalId }}</span>
+            </div>
+
+            <!-- 卡片主体 -->
+            <div class="ac-body">
+              <div class="ac-species-badge">
+                {{ row.species === '狗' ? '🐕' : '🐱' }}
+              </div>
+              <div class="ac-name">{{ row.name }}</div>
+              <div class="ac-breed">{{ row.breed }}</div>
+              <div class="ac-meta">
+                <span class="ac-gender" :class="'ac-gender--' + row.gender">
+                  {{ row.gender === '公' ? '♂' : '♀' }}
+                </span>
+                <span class="ac-date">📅 {{ row.entryDate }}</span>
+              </div>
+            </div>
+
+            <!-- 卡片底部：操作按钮 -->
+            <div class="ac-footer">
+              <el-button size="small" round @click="handleViewMedical(row)">
+                🩺 档案
+              </el-button>
+              <el-button size="small" type="success" round
+                :disabled="row.adoptStatus !== 'pending'"
+                @click="handleAdopt(row)">
+                🏠 领养
+              </el-button>
+              <el-button size="small" type="danger" round @click="handleDelete(row)">
+                🗑 删除
+              </el-button>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+
+      <!-- 空状态 -->
+      <el-empty v-if="!loading && tableData.length === 0" description="还没有小动物档案哦~ 🐱">
+        <el-button type="primary" round @click="handleAdd">🐾 添加第一只动物</el-button>
+      </el-empty>
 
       <!-- 分页 -->
       <div class="pagination-wrapper">
         <el-pagination
           v-model:current-page="pagination.page"
           v-model:page-size="pagination.pageSize"
-          :page-sizes="[10, 20, 50]"
+          :page-sizes="[8, 16, 24]"
           :total="pagination.total"
           layout="total, sizes, prev, pager, next, jumper"
           background
@@ -151,7 +144,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, RefreshRight, Plus, Document, Present, Delete } from '@element-plus/icons-vue'
+import { Search, RefreshRight, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getAnimalList, createAnimal, deleteAnimal } from '@/api/animals'
 import { mockAnimals } from '@/store/mockData'
@@ -168,6 +161,7 @@ const statusMap = {
 }
 const statusTagType = (status) => statusMap[status]?.type || 'info'
 const statusLabel = (status) => statusMap[status]?.label || status
+const statusEmoji = (status) => ({ pending: '🐱', adopted: '🏡', sick: '🤒', treating: '💊' }[status] || '🐾')
 
 // ==================== 表格与分页 ====================
 const router = useRouter()
@@ -223,12 +217,7 @@ const handleSubmitAdd = async () => {
     addDialogVisible.value = false
     handleQuery()
   } catch {
-    // 后端未启动则写入本地 mock
-    const maxId = mockAnimals.reduce((max, a) => Math.max(max, a.animalId), 0)
-    mockAnimals.push({ animalId: maxId + 1, ...addForm, adoptStatus: 'pending' })
-    ElMessage.success('（Mock 模式）新增成功！')
-    addDialogVisible.value = false
-    handleQuery()
+    ElMessage.error('新增失败，请确认后端服务已启动')
   } finally {
     submitting.value = false
   }
@@ -279,11 +268,7 @@ const handleDelete = (row) => {
       ElMessage.success('删除成功')
       handleQuery()
     } catch {
-      // 后端未启动时从本地 mock 中移除
-      const idx = mockAnimals.findIndex(a => a.animalId === row.animalId)
-      if (idx !== -1) { mockAnimals.splice(idx, 1) }
-      ElMessage.success('（Mock 模式）已从本地移除')
-      handleQuery()
+      ElMessage.error('删除失败，请确认后端服务已启动')
     }
   }).catch(() => {})
 }
@@ -304,35 +289,80 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.animal-list {
-  padding: 20px;
-}
-
-.search-card {
-  margin-bottom: 16px;
-}
-
+.animal-list { padding: 24px; }
+.search-card { margin-bottom: 18px; }
 .search-card :deep(.el-card__body) {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  flex-wrap: wrap; gap: 10px; padding: 18px 22px;
+}
+.search-card__actions { display: flex; align-items: center; padding-top: 4px; }
+.card-header-title { font-weight: 700; color: #5EA87E; font-size: 15px; }
+.table-card :deep(.el-card__body) { padding: 18px 22px; }
+.animal-grid { min-height: 200px; }
+
+/* 动物卡片 */
+.animal-card {
+  background: #FFFEFB;
+  border-radius: 20px;
+  border: 2px solid #F5EDE0;
+  padding: 0;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(152,216,168,0.08);
+}
+.animal-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(152,216,168,0.2);
+  border-color: #C8F0D0;
 }
 
-.search-card__actions {
-  display: flex;
-  align-items: center;
-  padding-top: 4px;
-}
+/* 状态色边框 */
+.animal-card--pending { border-left: 5px solid #98D8A8; }
+.animal-card--adopted { border-left: 5px solid #A0C8A0; opacity: 0.85; }
+.animal-card--sick { border-left: 5px solid #F4A0A0; }
+.animal-card--treating { border-left: 5px solid #FFD0A0; }
 
-.table-card {
-  min-height: 400px;
+.ac-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 16px 0;
 }
+.ac-tag-emoji { margin-right: 2px; }
+.ac-id { color: #C8C0B0; font-size: 12px; font-weight: 600; }
 
-.pagination-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
+.ac-body {
+  text-align: center; padding: 12px 16px 10px;
 }
+.ac-species-badge {
+  font-size: 40px; margin-bottom: 4px;
+}
+.ac-name {
+  font-size: 18px; font-weight: 800; color: #5A4A3A;
+  margin-bottom: 2px;
+}
+.ac-breed {
+  font-size: 12px; color: #A09888; margin-bottom: 8px;
+}
+.ac-meta {
+  display: flex; justify-content: center; align-items: center; gap: 14px;
+  font-size: 13px; color: #A09888;
+}
+.ac-gender {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  font-size: 16px; font-weight: 700;
+}
+.ac-gender--公 { background: #E0F0FF; color: #6CA8E0; }
+.ac-gender--母 { background: #FFE0E8; color: #E888A0; }
+.ac-date { font-size: 12px; }
+
+.ac-footer {
+  display: flex; justify-content: center; gap: 6px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid #F5F0E8;
+  background: #FFFEF9;
+}
+.ac-footer .el-button { font-size: 12px; height: 30px; }
+
+.pagination-wrapper { display: flex; justify-content: center; margin-top: 20px; }
 </style>
