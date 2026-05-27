@@ -1,0 +1,31 @@
+<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- warm ambient glow -->
+  <defs>
+    <radialGradient id="glow2" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#F0FFF0" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#F0FFF0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="24" cy="22" r="20" fill="url(#glow2)"/>
+  <!-- house body -->
+  <rect x="12" y="18" width="24" height="20" rx="3" fill="#FDF5EC" stroke="#98D8A8" stroke-width="1.8"/>
+  <!-- roof -->
+  <polygon points="24,6 6,20 42,20" fill="#FFE8D0" stroke="#E8C8A0" stroke-width="1.8" stroke-linejoin="round"/>
+  <!-- door -->
+  <rect x="19" y="26" width="10" height="12" rx="4" fill="#98D8A8" opacity="0.4" stroke="#78C284" stroke-width="1.2"/>
+  <circle cx="27" cy="33" r="1.2" fill="#78C284"/>
+  <!-- window -->
+  <rect x="14" y="22" width="7" height="7" rx="2" fill="#E8F8E8" stroke="#B0D8B0" stroke-width="1"/>
+  <line x1="17.5" y1="22" x2="17.5" y2="29" stroke="#B0D8B0" stroke-width="0.8"/>
+  <line x1="14" y1="25.5" x2="21" y2="25.5" stroke="#B0D8B0" stroke-width="0.8"/>
+  <!-- path -->
+  <path d="M24 38 Q22 42 24 44" stroke="#D8C8B0" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <!-- plant left -->
+  <circle cx="8" cy="34" r="3" fill="#A8D8A8" stroke="#78C284" stroke-width="0.8"/>
+  <rect x="7" y="37" width="2" height="5" rx="1" fill="#B8956E"/>
+  <!-- plant right -->
+  <circle cx="40" cy="36" r="2.5" fill="#A8D8A8" stroke="#78C284" stroke-width="0.8"/>
+  <rect x="39" y="38.5" width="2" height="4" rx="1" fill="#B8956E"/>
+  <!-- Home Found -->
+  <text x="24" y="17" text-anchor="middle" font-size="4.5" font-weight="700" fill="#78C284" font-family="sans-serif">HOME FOUND</text>
+</svg>

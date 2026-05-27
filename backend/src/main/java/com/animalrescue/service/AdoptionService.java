@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -29,19 +30,14 @@ public class AdoptionService {
     }
 
     /**
-     * 提交领养申请（核心事务）
+     * 提交领养申请（双角色分流）
      *
-     * @param realName       领养人姓名
-     * @param phone          电话
-     * @param idCard         身份证号
-     * @param animalId       心仪动物 ID
-     * @param houseCondition 住房情况
-     * @param remark         备注
+     * @param role owner=线上申请(pending) / admin=线下登记(approved)
      */
     @Transactional
     public Map<String, Object> apply(String realName, String phone, String idCard,
-                                      Long animalId, String houseCondition, String remark) {
-        // ========== 1. 校验动物状态 ==========
+                                      Long animalId, String houseCondition, String remark,
+                                      String role) {
         Animal animal = animalMapper.findById(animalId);
         if (animal == null) {
             throw new RuntimeException("动物不存在");
@@ -50,7 +46,6 @@ public class AdoptionService {
             throw new RuntimeException("该动物当前不可领养（状态：" + animal.getAdoptStatus() + "）");
         }
 
-        // ========== 2. 查询或新增领养人 ==========
         Adopter adopter = adopterMapper.findByIdCard(idCard);
         if (adopter == null) {
             adopter = new Adopter();
@@ -58,26 +53,52 @@ public class AdoptionService {
             adopter.setPhone(phone);
             adopter.setIdCard(idCard);
             adopter.setHouseCondition(houseCondition);
-            adopterMapper.insert(adopter); // 自增主键自动回填 adopterId
+            adopterMapper.insert(adopter);
         }
 
-        // ========== 3. 插入领养申请 ==========
+        // 分流：管理员直接 approved，宠物主人 pending
+        String appStatus = "admin".equals(role) ? "approved" : "pending";
+
         AdoptionApplication app = new AdoptionApplication();
         app.setAdopterId(adopter.getAdopterId());
         app.setAnimalId(animalId);
         app.setApplyDate(LocalDate.now().toString());
-        app.setStatus("pending");
+        app.setStatus(appStatus);
         app.setRemark(remark);
         applicationMapper.insert(app);
 
-        // ========== 4.（可选）动物状态变更为"申请中" ==========
-        animalMapper.updateStatus(animalId, "adopted");
+        // 管理员线下登记：动物直接变为已领养
+        if ("admin".equals(role)) {
+            animalMapper.updateStatus(animalId, "adopted");
+        }
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("applicationId", app.getApplicationId());
         result.put("adopterId", adopter.getAdopterId());
         result.put("animalId", animalId);
-        result.put("status", "pending");
+        result.put("status", appStatus);
         return result;
+    }
+
+    /** 获取待审核申请列表 */
+    public List<Map<String, Object>> getPendingApplications() {
+        return applicationMapper.findPendingApplications();
+    }
+
+    /** 审核通过：更新申请状态 + 动物标记为已领养 */
+    @Transactional
+    public void approve(Long applicationId) {
+        AdoptionApplication app = applicationMapper.findById(applicationId);
+        if (app == null) throw new RuntimeException("申请不存在");
+        applicationMapper.updateStatus(applicationId, "approved");
+        animalMapper.updateStatus(app.getAnimalId(), "adopted");
+    }
+
+    /** 审核拒绝：仅更新申请状态 */
+    @Transactional
+    public void reject(Long applicationId) {
+        AdoptionApplication app = applicationMapper.findById(applicationId);
+        if (app == null) throw new RuntimeException("申请不存在");
+        applicationMapper.updateStatus(applicationId, "rejected");
     }
 }

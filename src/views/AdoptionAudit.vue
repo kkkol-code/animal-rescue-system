@@ -3,8 +3,13 @@
     <el-card shadow="never" class="form-card">
       <template #header>
         <div class="form-card__header">
-          <el-icon :size="20"><EditPen /></el-icon>
-          <span>领养申请表</span>
+          <div class="form-card__header-left">
+            <el-icon :size="20"><EditPen /></el-icon>
+            <span>领养申请表</span>
+          </div>
+          <el-button v-if="role === 'admin'" type="warning" :icon="Check" round @click="handleAudit">
+            审核宠物申请
+          </el-button>
         </div>
       </template>
 
@@ -95,20 +100,42 @@
         </el-form-item>
       </el-form>
     </el-card>
+
+    <!-- ==================== 审核弹窗（仅管理员可见）==================== -->
+    <el-dialog v-model="auditDialogVisible" title="审核宠物申请" width="900px" :close-on-click-modal="false">
+      <el-table :data="pendingApplications" v-loading="auditLoading" stripe border max-height="480">
+        <el-table-column prop="application_id" label="申请编号" width="90" align="center" />
+        <el-table-column prop="adopter_name" label="领养人" width="100" />
+        <el-table-column prop="phone" label="电话" width="130" />
+        <el-table-column prop="id_card" label="身份证号" width="180" />
+        <el-table-column prop="house_condition" label="住房" width="110" />
+        <el-table-column prop="animal_name" label="动物" width="90" />
+        <el-table-column prop="breed" label="品种" width="110" />
+        <el-table-column prop="apply_date" label="申请日期" width="110" align="center" sortable />
+        <el-table-column label="操作" width="160" align="center" fixed="right">
+          <template #default="{ row }">
+            <el-button type="success" size="small" :icon="Check" @click="handleApprove(row)">通过</el-button>
+            <el-button type="danger" size="small" :icon="Close" @click="handleReject(row)">拒绝</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-empty v-if="!auditLoading && pendingApplications.length === 0" description="暂无待审核的申请 🐱" />
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { EditPen, User, Present, Check, RefreshRight } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { EditPen, User, Present, Check, RefreshRight, Close } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { getAdoptableAnimals } from '@/api/animals'
-import { submitAdoption } from '@/api/adoption'
+import { submitAdoption, getPendingApplications, approveApplication, rejectApplication } from '@/api/adoption'
 import { mockAnimals } from '@/store/mockData'
 
 // ==================== 可领养动物 ====================
 const route = useRoute()
+const role = sessionStorage.getItem('role') || 'owner'
 const availableAnimals = ref([])
 
 const fetchAnimals = async () => {
@@ -186,12 +213,14 @@ const handleSubmit = async () => {
     id_card: form.id_card,
     house_condition: form.house_condition,
     animal_id: form.animal_id,
-    remark: form.remark
+    remark: form.remark,
+    role: sessionStorage.getItem('role') || 'owner'
   }
 
   try {
     await submitAdoption(payload)
-    ElMessage.success('领养申请已成功提交！工作人员将在 3 个工作日内与您联系。')
+    const isAdmin = sessionStorage.getItem('role') === 'admin'
+    ElMessage.success(isAdmin ? '线下登记完成，动物已直接标记为已领养' : '领养申请已成功提交！工作人员将在 3 个工作日内与您联系。')
     handleReset()
   } catch {
     ElMessage.error('提交失败，请确认后端服务已启动')
@@ -206,6 +235,56 @@ const handleReset = () => {
   form.remark = ''
 }
 
+// ==================== 审核弹窗 ====================
+const auditDialogVisible = ref(false)
+const auditLoading = ref(false)
+const pendingApplications = ref([])
+
+const handleAudit = async () => {
+  auditDialogVisible.value = true
+  auditLoading.value = true
+  try {
+    const res = await getPendingApplications()
+    pendingApplications.value = res.data ?? []
+  } catch {
+    pendingApplications.value = []
+  } finally {
+    auditLoading.value = false
+  }
+}
+
+const handleApprove = (row) => {
+  ElMessageBox.confirm(
+    `确认通过「${row.adopter_name}」对「${row.animal_name}」的领养申请？通过后该动物将标记为已领养。`,
+    '审核通过确认',
+    { confirmButtonText: '确认通过', cancelButtonText: '取消', type: 'success' }
+  ).then(async () => {
+    try {
+      await approveApplication(row.application_id)
+      ElMessage.success('已通过该申请，动物已标记为已领养')
+      handleAudit()
+    } catch {
+      ElMessage.error('操作失败')
+    }
+  }).catch(() => {})
+}
+
+const handleReject = (row) => {
+  ElMessageBox.confirm(
+    `确认拒绝「${row.adopter_name}」对「${row.animal_name}」的领养申请？`,
+    '审核拒绝确认',
+    { confirmButtonText: '确认拒绝', cancelButtonText: '取消', type: 'warning' }
+  ).then(async () => {
+    try {
+      await rejectApplication(row.application_id)
+      ElMessage.success('已拒绝该申请')
+      handleAudit()
+    } catch {
+      ElMessage.error('操作失败')
+    }
+  }).catch(() => {})
+}
+
 onMounted(() => {
   fetchAnimals()
 })
@@ -214,7 +293,8 @@ onMounted(() => {
 <style scoped>
 .adoption-audit { padding: 24px; }
 .form-card { max-width: 800px; margin: 0 auto; }
-.form-card__header { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: #5EA87E; }
+.form-card__header { display: flex; align-items: center; justify-content: space-between; }
+.form-card__header-left { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: #5EA87E; }
 :deep(.el-divider) { margin: 28px 0 22px; }
 :deep(.el-divider__text) { color: #5EA87E; font-weight: 600; }
 </style>

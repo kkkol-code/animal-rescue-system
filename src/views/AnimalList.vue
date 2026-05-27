@@ -31,7 +31,7 @@
           <el-button :icon="RefreshRight" @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
-      <div class="search-card__actions">
+      <div class="search-card__actions" v-if="role === 'admin'">
         <el-button type="primary" :icon="Plus" @click="handleAdd">新增动物</el-button>
       </div>
     </el-card>
@@ -39,7 +39,7 @@
     <!-- 🐾 卡片式动物档案网格 -->
     <el-card shadow="never" class="table-card" v-loading="loading">
       <template #header>
-        <span class="card-header-title">🐾 动物档案 · 共 {{ pagination.total }} 只小可爱</span>
+        <span class="card-header-title">🐾 动物档案 · 共 {{ pagination.total }} 只小宠物</span>
       </template>
 
       <el-row :gutter="16" class="animal-grid">
@@ -48,7 +48,6 @@
             <!-- 卡片头部：状态 + ID -->
             <div class="ac-header">
               <el-tag :type="statusTagType(row.adoptStatus)" effect="dark" size="small" class="ac-tag">
-                <span class="ac-tag-emoji">{{ statusEmoji(row.adoptStatus) }}</span>
                 {{ statusLabel(row.adoptStatus) }}
               </el-tag>
               <span class="ac-id">#{{ row.animalId }}</span>
@@ -57,7 +56,7 @@
             <!-- 卡片主体 -->
             <div class="ac-body">
               <div class="ac-species-badge">
-                {{ row.species === '狗' ? '🐕' : '🐱' }}
+                <img :src="row.species === '狗' ? dogImg : catImg" class="ac-species-img" alt="species" />
               </div>
               <div class="ac-name">{{ row.name }}</div>
               <div class="ac-breed">{{ row.breed }}</div>
@@ -79,7 +78,7 @@
                 @click="handleAdopt(row)">
                 🏠 领养
               </el-button>
-              <el-button size="small" type="danger" round @click="handleDelete(row)">
+              <el-button v-if="role === 'admin'" size="small" type="danger" round @click="handleDelete(row)">
                 🗑 删除
               </el-button>
             </div>
@@ -148,6 +147,10 @@ import { Search, RefreshRight, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getAnimalList, createAnimal, deleteAnimal } from '@/api/animals'
 import { mockAnimals } from '@/store/mockData'
+import catImg from '@/assets/rescue_cat.png'
+import dogImg from '@/assets/rescue_dog.png'
+
+const role = sessionStorage.getItem('role') || 'admin'
 
 // ==================== 筛选表单 ====================
 const queryForm = reactive({ name: '', status: '', species: '' })
@@ -161,7 +164,6 @@ const statusMap = {
 }
 const statusTagType = (status) => statusMap[status]?.type || 'info'
 const statusLabel = (status) => statusMap[status]?.label || status
-const statusEmoji = (status) => ({ pending: '🐱', adopted: '🏡', sick: '🤒', treating: '💊' }[status] || '🐾')
 
 // ==================== 表格与分页 ====================
 const router = useRouter()
@@ -327,14 +329,18 @@ onMounted(() => {
   display: flex; justify-content: space-between; align-items: center;
   padding: 14px 16px 0;
 }
-.ac-tag-emoji { margin-right: 2px; }
+
 .ac-id { color: #C8C0B0; font-size: 12px; font-weight: 600; }
 
 .ac-body {
   text-align: center; padding: 12px 16px 10px;
 }
 .ac-species-badge {
-  font-size: 40px; margin-bottom: 4px;
+  margin-bottom: 4px;
+}
+.ac-species-img {
+  width: 52px; height: 52px; border-radius: 50%;
+  object-fit: cover; border: 2px solid #F0E8DC;
 }
 .ac-name {
   font-size: 18px; font-weight: 800; color: #5A4A3A;

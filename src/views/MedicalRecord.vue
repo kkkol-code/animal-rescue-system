@@ -29,7 +29,7 @@
       <template #header>
         <div class="mr-records__header">
           <span>医疗记录（共 {{ records.length }} 条）</span>
-          <el-button type="primary" :icon="Plus" @click="openAddDialog">新增记录</el-button>
+          <el-button v-if="role === 'admin'" type="primary" :icon="Plus" @click="openAddDialog">新增记录</el-button>
         </div>
       </template>
       <el-table :data="records" stripe border style="width: 100%">
@@ -138,6 +138,7 @@ import { mockMedicalRecords, findAnimal, addMedicalRecord } from '@/store/mockDa
 
 const route = useRoute()
 const router = useRouter()
+const role = sessionStorage.getItem('role') || 'admin'
 const loading = ref(false)
 const saving = ref(false)
 

@@ -9,6 +9,7 @@ public class Animal {
     private String gender;        // 公 / 母
     private String adoptStatus;   // pending / adopted / sick / treating
     private String entryDate;
+    private String vaccination;   // 已免疫 / 未免疫 / 部分免疫 / 未记录
 
     // getter & setter
     public Long getAnimalId() { return animalId; }
@@ -25,4 +26,6 @@ public class Animal {
     public void setAdoptStatus(String adoptStatus) { this.adoptStatus = adoptStatus; }
     public String getEntryDate() { return entryDate; }
     public void setEntryDate(String entryDate) { this.entryDate = entryDate; }
+    public String getVaccination() { return vaccination; }
+    public void setVaccination(String vaccination) { this.vaccination = vaccination; }
 }

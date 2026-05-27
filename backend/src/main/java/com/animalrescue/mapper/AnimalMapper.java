@@ -38,8 +38,8 @@ public interface AnimalMapper {
     Animal findById(@Param("id") Long id);
 
     /** 新增动物 */
-    @Insert("INSERT INTO animals (name, species, breed, gender, adopt_status, entry_date) " +
-            "VALUES (#{name}, #{species}, #{breed}, #{gender}, #{adoptStatus}, #{entryDate})")
+    @Insert("INSERT INTO animals (name, species, breed, gender, adopt_status, entry_date, vaccination) " +
+            "VALUES (#{name}, #{species}, #{breed}, #{gender}, #{adoptStatus}, #{entryDate}, #{vaccination})")
     @Options(useGeneratedKeys = true, keyProperty = "animalId")
     int insert(Animal animal);
 

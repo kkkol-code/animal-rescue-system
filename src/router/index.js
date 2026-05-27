@@ -48,14 +48,10 @@ const router = createRouter({
 // ==================== 全局路由守卫 ====================
 router.beforeEach((to, from, next) => {
   const token = sessionStorage.getItem('token')
-  // 登录页不需要校验
-  if (to.meta.noAuth) {
-    return next()
-  }
-  // 无 token 则跳转登录页
-  if (!token) {
-    return next('/login')
-  }
+  const role = sessionStorage.getItem('role')
+  if (to.meta.noAuth) return next()
+  if (role === 'owner') return next()
+  if (!token) return next('/login')
   next()
 })
 

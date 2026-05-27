@@ -8,7 +8,7 @@
     <span class="paw-watermark w5">🐾</span>
 
     <div class="login-card">
-      <div class="login-mascot">🐱</div>
+      <img class="login-mascot" src="@/assets/rescue_cat.png" alt="玳瑁猫" />
       <div class="login-header">
         <h2>🐾 流浪动物救助站</h2>
         <p>每一只小动物都值得被温柔以待</p>
@@ -30,6 +30,13 @@
           </el-button>
         </el-form-item>
       </el-form>
+      <el-divider style="margin: 0 0 16px;">
+        <span style="color: #C0B8A8; font-size: 12px;">———— 或 ————</span>
+      </el-divider>
+      <button class="owner-btn" @click="handleOwnerLogin">
+        <img class="owner-btn__icon" src="@/assets/rescue_cat_icon.png" alt="玳瑁猫" />
+        <span>宠物主人登录</span>
+      </button>
     </div>
     <p class="login-footer">🫶 爱护动物 · 从领养开始</p>
   </div>
@@ -63,6 +70,7 @@ const handleLogin = async () => {
     sessionStorage.setItem('token', data.token)
     sessionStorage.setItem('username', data.username)
     sessionStorage.setItem('realName', data.realName || data.username)
+    sessionStorage.setItem('role', 'admin')
     ElMessage.success('🐱 欢迎回来！小动物们在等你~')
     router.push('/dashboard')
   } catch {
@@ -70,6 +78,13 @@ const handleLogin = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleOwnerLogin = () => {
+  sessionStorage.setItem('role', 'owner')
+  sessionStorage.setItem('username', '宠物主人')
+  ElMessage.success('欢迎！来看看等待领养的小动物们~')
+  router.push('/dashboard')
 }
 </script>
 
@@ -98,9 +113,11 @@ const handleLogin = async () => {
 }
 
 .login-mascot {
-  text-align: center;
-  font-size: 64px;
-  margin-bottom: 8px;
+  display: block;
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  margin: 0 auto 8px;
   animation: bob 2s ease-in-out infinite;
 }
 
@@ -112,6 +129,37 @@ const handleLogin = async () => {
 .login-header { text-align: center; margin-bottom: 28px; }
 .login-header h2 { margin: 0 0 6px; font-size: 22px; color: #5EA87E; font-weight: 700; }
 .login-header p { margin: 0; color: #B0A090; font-size: 13px; }
+
+.owner-btn__icon {
+  width: 32px; height: 32px;
+  object-fit: cover; flex-shrink: 0;
+  display: block;
+}
+
+.owner-btn {
+  box-sizing: border-box;
+  width: 100%;
+  height: 48px;
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  font-size: 16px; font-weight: 700;
+  font-family: inherit;
+  border-radius: 16px;
+  border: 2px dashed #98D8A8;
+  background: #FAFFF8;
+  color: #78c284;
+  cursor: pointer;
+  outline: none;
+  padding: 0 24px;
+  margin: 0;
+  transition: all 0.25s ease;
+}
+
+.owner-btn:hover {
+  background: linear-gradient(135deg, #E8F8E8, #FFF8E8);
+  border-color: #6CB880;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(120,194,132,0.15);
+}
 
 .login-footer {
   margin-top: 18px;

@@ -12,6 +12,7 @@
         <result property="gender" column="gender"/>
         <result property="adoptStatus" column="adopt_status"/>
         <result property="entryDate" column="entry_date"/>
+        <result property="vaccination" column="vaccination"/>
     </resultMap>
 
     <!-- 公共 WHERE 片段 -->
