@@ -26,9 +26,13 @@ public class AnimalController {
      * 新增动物，status 默认 pending
      */
     @PostMapping
-    public Result<Animal> add(@RequestBody Animal animal) {
-        Animal saved = animalService.addAnimal(animal);
-        return Result.ok("新增成功", saved);
+    public Result<?> add(@RequestBody Animal animal) {
+        try {
+            Animal saved = animalService.addAnimal(animal);
+            return Result.ok("新增成功", saved);
+        } catch (Exception e) {
+            return Result.fail("新增失败: " + e.getMessage());
+        }
     }
 
     /**
@@ -43,6 +47,20 @@ public class AnimalController {
         } catch (RuntimeException e) {
             return Result.fail(e.getMessage());
         }
+    }
+
+    /**
+     * PUT /api/animals/{id}/status
+     * 管理员更改动物健康状态
+     */
+    @PutMapping("/{id}/status")
+    public Result<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String status = body.get("status");
+        if (status == null || !status.matches("pending|sick|treating")) {
+            return Result.fail("无效的状态值");
+        }
+        animalMapper.updateStatus(id, status);
+        return Result.ok("状态已更新");
     }
 
     /**

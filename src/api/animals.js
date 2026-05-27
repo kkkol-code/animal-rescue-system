@@ -16,3 +16,6 @@ export const getAdoptableAnimals = () => request.get('/animals', { params: { ado
 
 /** 删除动物 */
 export const deleteAnimal = (id) => request.delete(`/animals/${id}`)
+
+/** 更改动物状态 */
+export const updateAnimalStatus = (id, status) => request.put(`/animals/${id}/status`, { status })

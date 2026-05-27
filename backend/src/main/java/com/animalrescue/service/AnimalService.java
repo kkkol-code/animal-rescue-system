@@ -34,6 +34,9 @@ public class AnimalService {
      */
     public Animal addAnimal(Animal animal) {
         animal.setAdoptStatus("pending");
+        if (animal.getVaccination() == null) {
+            animal.setVaccination("未记录");
+        }
         animalMapper.insert(animal);
         return animal;
     }

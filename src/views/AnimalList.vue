@@ -47,7 +47,20 @@
           <div class="animal-card" :class="'animal-card--' + row.adoptStatus">
             <!-- 卡片头部：状态 + ID -->
             <div class="ac-header">
-              <el-tag :type="statusTagType(row.adoptStatus)" effect="dark" size="small" class="ac-tag">
+              <el-dropdown v-if="role === 'admin'" trigger="click" @command="(cmd) => handleStatusChange(row.animalId, cmd)">
+                <el-tag :type="statusTagType(row.adoptStatus)" effect="dark" size="small" class="ac-tag ac-tag--clickable">
+                  {{ statusLabel(row.adoptStatus) }} ▾
+                </el-tag>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="pending">🐱 待领养</el-dropdown-item>
+                    <el-dropdown-item command="sick">🤒 生病中</el-dropdown-item>
+                    <el-dropdown-item command="treating">💉 治疗中</el-dropdown-item>
+                    <el-dropdown-item command="adopted">🏡 已领养</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+              <el-tag v-else :type="statusTagType(row.adoptStatus)" effect="dark" size="small" class="ac-tag">
                 {{ statusLabel(row.adoptStatus) }}
               </el-tag>
               <span class="ac-id">#{{ row.animalId }}</span>
@@ -143,9 +156,9 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, RefreshRight, Plus } from '@element-plus/icons-vue'
+import { Search, RefreshRight, Plus, ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getAnimalList, createAnimal, deleteAnimal } from '@/api/animals'
+import { getAnimalList, createAnimal, deleteAnimal, updateAnimalStatus } from '@/api/animals'
 import { mockAnimals } from '@/store/mockData'
 import catImg from '@/assets/rescue_cat.png'
 import dogImg from '@/assets/rescue_dog.png'
@@ -214,12 +227,17 @@ const handleSubmitAdd = async () => {
   try { await addFormRef.value.validate() } catch { return }
   submitting.value = true
   try {
-    await createAnimal({ ...addForm })
+    const res = await createAnimal({ ...addForm })
+    if (res.code !== 200) {
+      ElMessage.error(res.msg || '新增失败')
+      return
+    }
     ElMessage.success('新增动物成功！')
     addDialogVisible.value = false
     handleQuery()
-  } catch {
-    ElMessage.error('新增失败，请确认后端服务已启动')
+  } catch (e) {
+    const msg = e?.response?.data?.msg || e?.message || '请确认后端服务已启动'
+    ElMessage.error('新增失败: ' + msg)
   } finally {
     submitting.value = false
   }
@@ -273,6 +291,16 @@ const handleDelete = (row) => {
       ElMessage.error('删除失败，请确认后端服务已启动')
     }
   }).catch(() => {})
+}
+
+const handleStatusChange = async (animalId, newStatus) => {
+  try {
+    await updateAnimalStatus(animalId, newStatus)
+    ElMessage.success('状态已更新')
+    handleQuery()
+  } catch {
+    ElMessage.error('状态更新失败')
+  }
 }
 
 const handleAdopt = (row) => {
@@ -330,6 +358,8 @@ onMounted(() => {
   padding: 14px 16px 0;
 }
 
+.ac-tag--clickable { cursor: pointer; user-select: none; }
+.ac-tag--clickable:hover { opacity: 0.85; }
 .ac-id { color: #C8C0B0; font-size: 12px; font-weight: 600; }
 
 .ac-body {

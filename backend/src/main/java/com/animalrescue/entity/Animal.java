@@ -9,7 +9,7 @@ public class Animal {
     private String gender;        // 公 / 母
     private String adoptStatus;   // pending / adopted / sick / treating
     private String entryDate;
-    private String vaccination;   // 已免疫 / 未免疫 / 部分免疫 / 未记录
+    private String vaccination = "未记录";   // 已免疫 / 未免疫 / 部分免疫 / 未记录
 
     // getter & setter
     public Long getAnimalId() { return animalId; }
